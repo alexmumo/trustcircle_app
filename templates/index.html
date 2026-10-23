@@ -1,801 +1,201 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TrustCircle</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrustCircle | Community lending</title>
     <style>
       :root {
         --bg: #f4f7fb;
         --card: #ffffff;
-        --primary: #1d4ed8;
-        --primary-soft: #dbeafe;
+        --primary: #0f766e;
+        --primary-dark: #115e59;
+        --accent: #14b8a6;
+        --text: #122033;
+        --muted: #64748b;
+        --line: #e2e8f0;
         --success: #16a34a;
         --danger: #dc2626;
-        --warning: #f59e0b;
-        --text: #111827;
-        --muted: #6b7280;
-        --border: #e5e7eb;
       }
-
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: var(--bg);
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #ecfdf5 0%, #f4f7fb 35%, #f8fafc 100%);
         color: var(--text);
       }
-
       .container {
-        max-width: 1200px;
+        max-width: 1180px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 24px 20px 60px;
       }
-
-      header {
-        background: linear-gradient(135deg, #0f172a, #1d4ed8);
-        color: white;
-        padding: 18px 20px;
-        border-radius: 12px;
-        margin-bottom: 24px;
-      }
-
-      nav {
+      .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
+        margin-bottom: 26px;
       }
-
       .brand {
-        font-size: 1.5rem;
-        font-weight: bold;
-      }
-
-      .nav-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-
-      .btn {
-        padding: 10px 14px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s ease;
-      }
-
-      .btn:hover {
-        opacity: 0.96;
-      }
-
-      .btn-primary {
-        background: var(--primary);
-        color: white;
-      }
-
-      .btn-success {
-        background: var(--success);
-        color: white;
-      }
-
-      .btn-danger {
-        background: var(--danger);
-        color: white;
-      }
-
-      .btn-secondary {
-        background: #e5e7eb;
-        color: var(--text);
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      }
-
-      h2,
-      h3 {
-        margin-top: 0;
-      }
-
-      .auth-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      form {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 1rem;
-      }
-
-      textarea {
-        min-height: 90px;
-        resize: vertical;
-      }
-
-      .meta {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .status {
-        margin-top: 12px;
-        border-radius: 8px;
-        padding: 10px 12px;
-        display: none;
-        font-weight: 600;
-      }
-
-      .status.success {
-        background: #dcfce7;
-        color: #166534;
-        display: block;
-      }
-
-      .status.error {
-        background: #fee2e2;
-        color: #991b1b;
-        display: block;
-      }
-
-      .wallet-box {
-        background: linear-gradient(135deg, #eff6ff, #e0f2fe);
-        border: 1px solid #bfdbfe;
-        border-radius: 12px;
-        padding: 18px;
-      }
-
-      .balance {
-        font-size: 2rem;
-        margin: 10px 0;
-        font-weight: bold;
-      }
-
-      .loan-list,
-      .funding-list,
-      .repayment-list,
-      .transaction-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 12px;
-      }
-
-      .loan-item,
-      .funding-item,
-      .repayment-item,
-      .transaction-item {
-        border: 1px solid var(--border);
-        background: #fff;
-        border-radius: 10px;
-        padding: 12px;
-      }
-
-      .row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .badge {
         display: inline-flex;
         align-items: center;
-        padding: 4px 8px;
+        gap: 12px;
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 700;
+      }
+      .nav a {
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 12px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 22px;
+        align-items: stretch;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+      }
+      .hero-copy {
+        padding: 32px;
+      }
+      .eyebrow {
+        display: inline-block;
+        background: #ecfeff;
+        color: var(--primary-dark);
+        padding: 8px 12px;
         border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: bold;
-        background: #e0f2fe;
-        color: #075985;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
-
-      .badge.pending,
-      .badge.funding {
-        background: #fef3c7;
-        color: #92400e;
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(2.3rem, 5vw, 4rem);
+        line-height: 1.1;
       }
-
-      .badge.funded,
-      .badge.disbursed {
-        background: #dcfce7;
-        color: #166534;
+      p {
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 1.05rem;
       }
-
-      .badge.overdue {
-        background: #fee2e2;
-        color: #991b1b;
+      .actions {
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
       }
-
-      .badge.paid,
-      .badge.completed {
-        background: #e0e7ff;
-        color: #3730a3;
+      .btn {
+        display: inline-block;
+        border: none;
+        border-radius: 12px;
+        padding: 13px 20px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s ease all;
       }
-
-      .section {
+      .btn:hover { transform: translateY(-1px); }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+      }
+      .btn-secondary {
+        background: #e6fffb;
+        color: var(--primary-dark);
+      }
+      .stats-card {
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .score {
+        font-size: 4rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+      }
+      .grid {
         margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
       }
-
-      .hidden {
-        display: none !important;
+      .feature {
+        padding: 22px;
+      }
+      .feature h3 {
+        margin: 0 0 10px;
+      }
+      @media (max-width: 820px) {
+        .hero, .grid { grid-template-columns: 1fr; }
+        .header { flex-direction: column; align-items: flex-start; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <header>
-        <nav>
-          <div class="brand">TrustCircle</div>
-          <div class="nav-actions">
-            <span id="userInfo" class="meta">Not logged in</span>
-            <button id="logoutBtn" class="btn btn-secondary hidden">Logout</button>
-          </div>
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <span>TrustCircle</span>
+        </div>
+        <nav class="nav">
+          <a href="/login">Login</a>
+          <a href="/dashboard">Dashboard</a>
         </nav>
       </header>
 
-      <div id="messageBox" class="status"></div>
-
-      <section class="auth-grid">
-        <div id="authCard" class="card">
-          <h2>Login / Register</h2>
-          <div class="grid">
-            <div>
-              <h3>Register</h3>
-              <form id="registerForm">
-                <input name="full_name" placeholder="Full name" required />
-                <input name="email" type="email" placeholder="Email" required />
-                <input name="password" type="password" placeholder="Password (min 8 chars)" required />
-                <button class="btn btn-primary" type="submit">Create account</button>
-              </form>
-            </div>
-
-            <div>
-              <h3>Login</h3>
-              <form id="loginForm">
-                <input name="email" type="email" placeholder="Email" required />
-                <input name="password" type="password" placeholder="Password" required />
-                <button class="btn btn-primary" type="submit">Login</button>
-              </form>
-            </div>
+      <section class="hero">
+        <div class="card hero-copy">
+          <span class="eyebrow">Community lending</span>
+          <h1>Borrow with trust. Lend with confidence.</h1>
+          <p>
+            TrustCircle helps people access small loans, contribute to community funding,
+            and track repayment schedules in one transparent platform.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="/login">Get Started</a>
+            <a class="btn btn-secondary" href="/dashboard">View Dashboard</a>
           </div>
         </div>
 
-        <div id="dashboardCard" class="card hidden">
-          <h2>Wallet</h2>
-          <div class="wallet-box">
-            <div class="meta">Available balance</div>
-            <div id="walletBalance" class="balance">KES 0</div>
-            <div class="row">
-              <form id="depositForm" style="display: inline-flex; flex-direction: row; gap: 8px;">
-                <input id="depositAmount" type="number" min="1" step="0.01" placeholder="KES amount" required />
-                <button class="btn btn-success" type="submit">Deposit</button>
-              </form>
-              <form id="withdrawForm" style="display: inline-flex; flex-direction: row; gap: 8px;">
-                <input id="withdrawAmount" type="number" min="1" step="0.01" placeholder="KES amount" required />
-                <button class="btn btn-danger" type="submit">Withdraw</button>
-              </form>
-            </div>
-          </div>
+        <div class="card stats-card">
+          <div style="color: var(--muted); font-weight: 700;">Member trust score</div>
+          <div class="score">92</div>
+          <p>Transparent peer-to-peer lending built around trust and accountability.</p>
         </div>
       </section>
 
-      <section class="section">
-        <h2>Request a loan</h2>
-        <div class="card">
-          <form id="loanForm">
-            <div class="grid">
-              <div>
-                <input name="amount" type="number" min="1000" max="100000" step="100" placeholder="Loan amount (KES)" required />
-              </div>
-              <div>
-                <select name="term" required>
-                  <option value="">Select term</option>
-                  <option value="1">1 month</option>
-                  <option value="2">2 months</option>
-                  <option value="3">3 months</option>
-                  <option value="6">6 months</option>
-                </select>
-              </div>
-              <div>
-                <select name="type" required>
-                  <option value="">Select loan type</option>
-                  <option value="Personal">Personal</option>
-                  <option value="Business">Business</option>
-                  <option value="School fees">School fees</option>
-                  <option value="Emergency">Emergency</option>
-                </select>
-              </div>
-            </div>
-            <textarea name="description" placeholder="Describe the loan purpose"></textarea>
-            <button class="btn btn-primary" type="submit">Submit loan request</button>
-          </form>
+      <section class="grid">
+        <div class="card feature">
+          <h3>Wallet-backed lending</h3>
+          <p>Users can fund loans from their wallet balance with real-time transaction tracking.</p>
         </div>
-      </section>
-
-      <section class="section">
-        <h2>Marketplace</h2>
-        <div class="card">
-          <div id="loanList" class="loan-list"></div>
+        <div class="card feature">
+          <h3>Loan marketplace</h3>
+          <p>Borrowers can request loans and lenders can contribute to the exact amount needed.</p>
         </div>
-      </section>
-
-      <section class="section">
-        <h2>My Loans</h2>
-        <div class="card">
-          <div id="myLoansList" class="loan-list"></div>
-        </div>
-      </section>
-
-      <section class="section">
-        <h2>My Funding</h2>
-        <div class="card">
-          <div id="myFundingList" class="funding-list"></div>
-        </div>
-      </section>
-
-      <section class="section">
-        <h2>Repayments</h2>
-        <div class="card">
-          <div id="repaymentList" class="repayment-list"></div>
-        </div>
-      </section>
-
-      <section class="section">
-        <h2>Recent Transactions</h2>
-        <div class="card">
-          <div id="transactionList" class="transaction-list"></div>
+        <div class="card feature">
+          <h3>Repayment flow</h3>
+          <p>Borrowers manage due installments and keep track of their repayment schedule over time.</p>
         </div>
       </section>
     </div>
-
-    <script>
-      const appState = {
-        isLoggedIn: false,
-        user: null
-      };
-
-      const messageBox = document.getElementById("messageBox");
-      const authCard = document.getElementById("authCard");
-      const dashboardCard = document.getElementById("dashboardCard");
-      const userInfo = document.getElementById("userInfo");
-      const logoutBtn = document.getElementById("logoutBtn");
-
-      function showMessage(msg, type = "success") {
-        messageBox.textContent = msg;
-        messageBox.className = `status ${type}`;
-      }
-
-      async function fetchJson(url, options = {}) {
-        const response = await fetch(url, {
-          headers: {
-            "Content-Type": "application/json"
-          },
-          ...options
-        });
-
-        const contentType = response.headers.get("Content-Type") || "";
-        let data = {};
-        if (contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          data = { message: await response.text() };
-        }
-
-        if (!response.ok) {
-          throw new Error(data.error || data.message || "Request failed");
-        }
-
-        return data;
-      }
-
-      function formatCurrency(value) {
-        const num = Number(value || 0);
-        return `KES ${num.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-      }
-
-      function renderWallet(balance) {
-        const walletBalance = document.getElementById("walletBalance");
-        walletBalance.textContent = formatCurrency(balance);
-      }
-
-      function renderUserState() {
-        const isLoggedIn = appState.isLoggedIn && !!appState.user;
-
-        userInfo.textContent = isLoggedIn
-          ? `${appState.user.full_name} (${appState.user.trust_score})`
-          : "Not logged in";
-
-        authCard.classList.toggle("hidden", isLoggedIn);
-        dashboardCard.classList.toggle("hidden", !isLoggedIn);
-        logoutBtn.classList.toggle("hidden", !isLoggedIn);
-      }
-
-      async function checkLogin() {
-        try {
-          const data = await fetchJson("/api/me");
-          appState.isLoggedIn = !!data.logged_in;
-          appState.user = data.user || null;
-          renderUserState();
-          if (appState.isLoggedIn) {
-            await Promise.all([
-              loadWallet(),
-              loadLoans(),
-              loadMyLoans(),
-              loadMyFunding(),
-              loadRepayments(),
-              loadTransactions()
-            ]);
-          } else {
-            document.getElementById("loanList").innerHTML = "";
-            document.getElementById("myLoansList").innerHTML = "";
-            document.getElementById("myFundingList").innerHTML = "";
-            document.getElementById("repaymentList").innerHTML = "";
-            document.getElementById("transactionList").innerHTML = "";
-          }
-        } catch (error) {
-          showMessage("Could not load session.", "error");
-        }
-      }
-
-      async function loadWallet() {
-        const data = await fetchJson("/api/wallet");
-        renderWallet(data.balance);
-      }
-
-      async function loadLoans() {
-        const data = await fetchJson("/api/loans");
-        const container = document.getElementById("loanList");
-
-        if (!data.length) {
-          container.innerHTML = "<div class='meta'>No loans available.</div>";
-          return;
-        }
-
-        container.innerHTML = data
-          .map((loan) => {
-            const isOwner = appState.user && appState.user.id === loan.borrower_id;
-            const canFund = !isOwner && appState.isLoggedIn && loan.status !== "completed" && loan.status !== "defaulted";
-
-            return `
-              <div class="loan-item">
-                <div class="row">
-                  <div>
-                    <strong>${loan.loan_type}</strong>
-                    <div class="meta">${loan.borrower_name || "Unknown"} · ${loan.term_months} months</div>
-                  </div>
-                  <span class="badge ${loan.status || "funding"}">${loan.status || "funding"}</span>
-                </div>
-
-                <div class="row" style="margin-top: 10px;">
-                  <div>Amount: <strong>${formatCurrency(loan.amount)}</strong></div>
-                  <div>Funded: <strong>${formatCurrency(loan.funded_amount)}</strong></div>
-                </div>
-
-                <div class="row">
-                  <div>Remaining: <strong>${formatCurrency(Math.max(0, Number(loan.amount) - Number(loan.funded_amount)))}</strong></div>
-                  <div>Trust score: <strong>${loan.trust_score || 0}</strong></div>
-                </div>
-
-                <div style="margin-top: 12px;">
-                  ${canFund
-                    ? `<div class="row">
-                        <input id="fund-${loan.id}" type="number" min="100" step="100" placeholder="Amt to fund" />
-                        <button class="btn btn-primary" onclick="fundLoan(${loan.id})">Fund</button>
-                      </div>`
-                    : `<div class="meta">${isOwner ? "This is your loan request." : "Funding unavailable"}</div>`}
-                </div>
-              </div>
-            `;
-          })
-          .join("");
-      }
-
-      async function loadMyLoans() {
-        const data = await fetchJson("/api/my-loans");
-        const container = document.getElementById("myLoansList");
-
-        if (!data.loans || !data.loans.length) {
-          container.innerHTML = "<div class='meta'>You have no loan requests.</div>";
-          return;
-        }
-
-        container.innerHTML = data.loans
-          .map((loan) => `
-            <div class="loan-item">
-              <div class="row">
-                <div>
-                  <strong>${loan.loan_type}</strong>
-                  <div class="meta">${loan.description || "No description"}</div>
-                </div>
-                <span class="badge ${loan.status || "funding"}">${loan.status || "funding"}</span>
-              </div>
-
-              <div class="row" style="margin-top: 10px;">
-                <div>Requested: <strong>${formatCurrency(loan.amount)}</strong></div>
-                <div>Funded: <strong>${formatCurrency(loan.funded_amount)}</strong></div>
-              </div>
-
-              <div class="row">
-                <div>Remaining: <strong>${formatCurrency(loan.remaining)}</strong></div>
-                <div>Funding: <strong>${loan.funding_percent}%</strong></div>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-
-      async function loadMyFunding() {
-        const data = await fetchJson("/api/my-funding");
-        const container = document.getElementById("myFundingList");
-
-        if (!data.funding || !data.funding.length) {
-          container.innerHTML = "<div class='meta'>You have not funded any loans yet.</div>";
-          return;
-        }
-
-        container.innerHTML = data.funding
-          .map((item) => `
-            <div class="funding-item">
-              <div class="row">
-                <div>
-                  <strong>${item.borrower_name}</strong>
-                  <div class="meta">${item.loan_type}</div>
-                </div>
-                <span class="badge ${item.status || "funding"}">${item.status || "funding"}</span>
-              </div>
-              <div class="row" style="margin-top: 10px;">
-                <div>Contribution: <strong>${formatCurrency(item.contribution)}</strong></div>
-                <div>Expected profit: <strong>${formatCurrency(item.expected_profit)}</strong></div>
-              </div>
-              <div class="row">
-                <div>Expected back: <strong>${formatCurrency(item.expected_back)}</strong></div>
-                <div>Return rate: <strong>${item.return_rate * 100}%</strong></div>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-
-      async function loadRepayments() {
-        const data = await fetchJson("/api/repayments");
-        const container = document.getElementById("repaymentList");
-
-        if (!data || !data.length) {
-          container.innerHTML = "<div class='meta'>No repayments due.</div>";
-          return;
-        }
-
-        container.innerHTML = data
-          .map((item) => `
-            <div class="repayment-item">
-              <div class="row">
-                <div>
-                  <strong>Loan #${item.loan_id}</strong>
-                  <div class="meta">${item.due_date}</div>
-                </div>
-                <span class="badge ${item.status || "pending"}">${item.status || "pending"}</span>
-              </div>
-              <div class="row" style="margin-top: 10px;">
-                <div>Amount: <strong>${formatCurrency(item.amount)}</strong></div>
-                <div>
-                  ${item.status === "paid"
-                    ? ""
-                    : `<button class="btn btn-primary" onclick="payRepayment(${item.id})">Pay now</button>`}
-                </div>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-
-      async function loadTransactions() {
-        const data = await fetchJson("/api/transactions");
-        const container = document.getElementById("transactionList");
-
-        if (!data || !data.length) {
-          container.innerHTML = "<div class='meta'>No recent transactions.</div>";
-          return;
-        }
-
-        container.innerHTML = data
-          .map((item) => `
-            <div class="transaction-item">
-              <div class="row">
-                <div>
-                  <strong>${item.transaction_type}</strong>
-                  <div class="meta">${new Date(item.created_at).toLocaleString()}</div>
-                </div>
-                <div>${formatCurrency(item.amount)}</div>
-              </div>
-            </div>
-          `)
-          .join("");
-      }
-
-      async function handleRegister(event) {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const payload = Object.fromEntries(new FormData(form).entries());
-
-        try {
-          await fetchJson("/api/register", {
-            method: "POST",
-            body: JSON.stringify(payload)
-          });
-          showMessage("Registration successful!", "success");
-          form.reset();
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function handleLogin(event) {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const payload = Object.fromEntries(new FormData(form).entries());
-
-        try {
-          await fetchJson("/api/login", {
-            method: "POST",
-            body: JSON.stringify(payload)
-          });
-          showMessage("Login successful!", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function handleLogout() {
-        try {
-          await fetchJson("/api/logout", {
-            method: "POST"
-          });
-          appState.user = null;
-          appState.isLoggedIn = false;
-          renderUserState();
-          showMessage("You have been logged out.", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function handleLoanSubmit(event) {
-        event.preventDefault();
-        const form = event.currentTarget;
-        const payload = Object.fromEntries(new FormData(form).entries());
-
-        try {
-          await fetchJson("/api/loans", {
-            method: "POST",
-            body: JSON.stringify({
-              amount: payload.amount,
-              term: Number(payload.term),
-              type: payload.type,
-              description: payload.description
-            })
-          });
-          showMessage("Loan created successfully.", "success");
-          form.reset();
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function fundLoan(loanId) {
-        const input = document.getElementById(`fund-${loanId}`);
-        const amount = Number(input.value);
-
-        if (!amount || amount < 100) {
-          showMessage("Enter a valid funding amount of at least KES 100.", "error");
-          return;
-        }
-
-        try {
-          await fetchJson(`/api/loans/${loanId}/fund`, {
-            method: "POST",
-            body: JSON.stringify({ amount })
-          });
-          showMessage("Funding successful.", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function payRepayment(repId) {
-        try {
-          await fetchJson(`/api/repayments/${repId}/pay`, {
-            method: "POST"
-          });
-          showMessage("Repayment successful.", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function handleDeposit(event) {
-        event.preventDefault();
-        const amount = Number(document.getElementById("depositAmount").value);
-
-        if (!amount || amount <= 0) {
-          showMessage("Enter a valid deposit amount.", "error");
-          return;
-        }
-
-        try {
-          await fetchJson("/api/wallet/deposit", {
-            method: "POST",
-            body: JSON.stringify({ amount })
-          });
-          showMessage("Deposit successful.", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      async function handleWithdraw(event) {
-        event.preventDefault();
-        const amount = Number(document.getElementById("withdrawAmount").value);
-
-        if (!amount || amount <= 0) {
-          showMessage("Enter a valid withdrawal amount.", "error");
-          return;
-        }
-
-        try {
-          await fetchJson("/api/wallet/withdraw", {
-            method: "POST",
-            body: JSON.stringify({ amount })
-          });
-          showMessage("Withdrawal successful.", "success");
-          await checkLogin();
-        } catch (error) {
-          showMessage(error.message, "error");
-        }
-      }
-
-      document.getElementById("registerForm").addEventListener("submit", handleRegister);
-      document.getElementById("loginForm").addEventListener("submit", handleLogin);
-      document.getElementById("loanForm").addEventListener("submit", handleLoanSubmit);
-      document.getElementById("depositForm").addEventListener("submit", handleDeposit);
-      document.getElementById("withdrawForm").addEventListener("submit", handleWithdraw);
-      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
-
-      checkLogin();
-    </script>
   </body>
 </html>

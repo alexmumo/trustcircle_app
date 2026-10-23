@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrustCircle | Dashboard</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #0f766e;
+        --primary-dark: #115e59;
+        --accent: #14b8a6;
+        --text: #122033;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --warning: #f59e0b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #ecfdf5 0%, #f4f7fb 35%, #f8fafc 100%);
+        color: var(--text);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 18px 50px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: rgba(255,255,255,0.7);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        margin-bottom: 24px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 1.4rem;
+      }
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: grid;
+        place-items: center;
+        color: white;
+      }
+      .nav {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .nav a, .nav button {
+        text-decoration: none;
+        font-weight: 600;
+        color: var(--text);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+      }
+      .btn-secondary {
+        background: #e6fffb;
+        color: var(--primary-dark);
+      }
+      .btn-danger {
+        background: #fee2e2;
+        color: var(--danger);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+      }
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .stat-value {
+        margin-top: 8px;
+        font-size: clamp(1.4rem, 2vw, 2.1rem);
+        font-weight: 700;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 18px;
+      }
+      .section {
+        margin-top: 24px;
+      }
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      input, select, textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 12px;
+        background: #f8fafc;
+        font-size: 1rem;
+      }
+      textarea { min-height: 90px; resize: vertical; }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .item {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .muted { color: var(--muted); }
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: #ecfeff;
+        color: var(--primary-dark);
+      }
+      .tag.pending, .tag.funding { background: #fef3c7; color: #92400e; }
+      .tag.paid, .tag.disbursed, .tag.funded { background: #dcfce7; color: #166534; }
+      .tag.overdue, .tag.defaulted { background: #fee2e2; color: #991b1b; }
+      .status { min-height: 20px; margin-top: 8px; font-size: 0.9rem; }
+      .status.error { color: var(--danger); }
+      .status.success { color: var(--success); }
+      @media (max-width: 900px) {
+        .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .grid { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 560px) {
+        .stats { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <span>TrustCircle</span>
+        </div>
+        <div class="nav">
+          <a href="/">Home</a>
+          <button id="logoutBtn" class="btn btn-danger">Logout</button>
+        </div>
+      </header>
+
+      <div class="stats">
+        <div class="card">
+          <div class="stat-label">Wallet</div>
+          <div id="walletBalance" class="stat-value">KES 0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Trust score</div>
+          <div id="trustScore" class="stat-value">0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">My loans</div>
+          <div id="myLoanSummary" class="stat-value">KES 0</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Expected profit</div>
+          <div id="expectedProfit" class="stat-value">KES 0</div>
+        </div>
+      </div>
+
+      <section class="grid">
+        <div class="card">
+          <div class="section-title">Wallet</div>
+          <form id="depositForm">
+            <input type="number" id="depositAmount" min="1" step="0.01" placeholder="Deposit amount" required />
+            <button class="btn btn-primary" type="submit">Deposit</button>
+          </form>
+          <form id="withdrawForm" style="margin-top: 12px;">
+            <input type="number" id="withdrawAmount" min="1" step="0.01" placeholder="Withdraw amount" required />
+            <button class="btn btn-secondary" type="submit">Withdraw</button>
+          </form>
+          <div id="walletStatus" class="status"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Request a loan</div>
+          <form id="loanForm">
+            <input type="number" name="amount" min="1000" step="100" placeholder="Loan amount" required />
+            <select name="term" required>
+              <option value="">Select term</option>
+              <option value="1">1 month</option>
+              <option value="2">2 months</option>
+              <option value="3">3 months</option>
+              <option value="6">6 months</option>
+            </select>
+            <select name="type" required>
+              <option value="">Select loan type</option>
+              <option>Personal</option>
+              <option>Business</option>
+              <option>School fees</option>
+              <option>Emergency</option>
+            </select>
+            <textarea name="description" placeholder="Description"></textarea>
+            <button class="btn btn-primary" type="submit">Submit loan request</button>
+          </form>
+          <div id="loanStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Marketplace</div>
+        <div id="loanList" class="list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">My loans</div>
+        <div id="myLoansList" class="list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">My funding</div>
+        <div id="myFundingList" class="list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Repayments</div>
+        <div id="repaymentsList" class="list"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">Recent transactions</div>
+        <div id="transactionsList" class="list"></div>
+      </section>
+    </div>
+
+    <script>
+      async function apiCall(url, options = {}) {
+        const response = await fetch(url, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || data.message || 'Request failed');
+        }
+        return data;
+      }
+
+      function money(v) {
+        return 'KES ' + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+      }
+      function setStatus(id, message, type='success') {
+        const el = document.getElementById(id);
+        el.textContent = message || '';
+        el.className = `status ${type}`;
+      }
+
+      async function refreshDashboard() {
+        try {
+          const [wallet, dashboard, loans, myLoans, myFunding, repayments, transactions] = await Promise.all([
+            apiCall('/api/wallet'),
+            apiCall('/api/dashboard'),
+            apiCall('/api/loans'),
+            apiCall('/api/my-loans'),
+            apiCall('/api/my-funding'),
+            apiCall('/api/repayments'),
+            apiCall('/api/transactions')
+          ]);
+
+          document.getElementById('walletBalance').textContent = money(wallet.balance || 0);
+          document.getElementById('trustScore').textContent = dashboard.user.trust_score || 0;
+          document.getElementById('myLoanSummary').textContent = money(dashboard.summary.total_requested || 0);
+          document.getElementById('expectedProfit').textContent = money(dashboard.summary.expected_profit || 0);
+
+          renderLoanList(loans);
+          renderMyLoans(myLoans);
+          renderMyFunding(myFunding);
+          renderRepayments(repayments);
+          renderTransactions(transactions);
+        } catch (error) {
+          window.location.href = '/login';
+        }
+      }
+
+      function renderLoanList(loans) {
+        const container = document.getElementById('loanList');
+        if (!loans || !loans.length) {
+          container.innerHTML = '<div class="item muted">No loans available.</div>';
+          return;
+        }
+
+        container.innerHTML = loans.map((loan) => {
+          const remaining = Math.max(0, Number(loan.amount) - Number(loan.funded_amount));
+          return `
+            <div class="item">
+              <div class="row">
+                <div>
+                  <strong>${loan.loan_type}</strong><br>
+                  <span class="muted">Borrower: ${loan.borrower_name}</span>
+                </div>
+                <span class="tag ${loan.status || 'funding'}">${loan.status || 'funding'}</span>
+              </div>
+              <div class="row" style="margin-top: 8px;">
+                <span>Amount: ${money(loan.amount)}</span>
+                <span>Funded: ${money(loan.funded_amount)}</span>
+              </div>
+              <div class="row" style="margin-top: 8px;">
+                <span>Remaining: ${money(remaining)}</span>
+                <span>Trust: ${loan.trust_score || 0}</span>
+              </div>
+              <div class="row" style="margin-top: 12px;">
+                <input id="fund-${loan.id}" type="number" min="100" step="100" placeholder="Amount" style="max-width: 180px;" />
+                <button class="btn btn-primary" onclick="fundLoan(${loan.id})">Fund</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderMyLoans(data) {
+        const container = document.getElementById('myLoansList');
+        if (!data.loans || !data.loans.length) {
+          container.innerHTML = '<div class="item muted">You have no loan requests.</div>';
+          return;
+        }
+
+        container.innerHTML = data.loans.map((loan) => `
+          <div class="item">
+            <div class="row">
+              <strong>${loan.loan_type}</strong>
+              <span class="tag ${loan.status || 'funding'}">${loan.status || 'funding'}</span>
+            </div>
+            <div class="row" style="margin-top: 8px;">
+              <span>Requested: ${money(loan.amount)}</span>
+              <span>Funded: ${money(loan.funded_amount)}</span>
+            </div>
+            <div class="row" style="margin-top: 6px;">
+              <span>Remaining: ${money(loan.remaining)}</span>
+              <span>Funding: ${loan.funding_percent}%</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderMyFunding(data) {
+        const container = document.getElementById('myFundingList');
+        if (!data.funding || !data.funding.length) {
+          container.innerHTML = '<div class="item muted">You have not funded any loans yet.</div>';
+          return;
+        }
+
+        container.innerHTML = data.funding.map((item) => `
+          <div class="item">
+            <div class="row">
+              <strong>${item.borrower_name}</strong>
+              <span class="tag ${item.status || 'funding'}">${item.status || 'funding'}</span>
+            </div>
+            <div class="row" style="margin-top: 8px;">
+              <span>Contribution: ${money(item.contribution)}</span>
+              <span>Expected profit: ${money(item.expected_profit)}</span>
+            </div>
+            <div class="row" style="margin-top: 6px;">
+              <span>Expected back: ${money(item.expected_back)}</span>
+              <span>Return: ${Number(item.return_rate * 100).toFixed(0)}%</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderRepayments(data) {
+        const container = document.getElementById('repaymentsList');
+        if (!data || !data.length) {
+          container.innerHTML = '<div class="item muted">No repayments due.</div>';
+          return;
+        }
+
+        container.innerHTML = data.map((item) => `
+          <div class="item">
+            <div class="row">
+              <div>
+                <strong>Loan #${item.loan_id}</strong><br>
+                <span class="muted">Due: ${item.due_date}</span>
+              </div>
+              <span class="tag ${item.status || 'pending'}">${item.status || 'pending'}</span>
+            </div>
+            <div class="row" style="margin-top: 8px;">
+              <span>Amount: ${money(item.amount)}</span>
+              ${item.status === 'paid' ? '' : '<button class="btn btn-primary" onclick="payRepayment(' + item.id + ')">Pay now</button>'}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderTransactions(data) {
+        const container = document.getElementById('transactionsList');
+        if (!data || !data.length) {
+          container.innerHTML = '<div class="item muted">No recent transactions.</div>';
+          return;
+        }
+
+        container.innerHTML = data.map((item) => `
+          <div class="item">
+            <div class="row">
+              <div>
+                <strong>${item.transaction_type}</strong><br>
+                <span class="muted">${new Date(item.created_at).toLocaleString()}</span>
+              </div>
+              <strong>${money(item.amount)}</strong>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      async function fundLoan(loanId) {
+        const input = document.getElementById(`fund-${loanId}`);
+        const amount = Number(input.value);
+        if (!amount || amount < 100) {
+          setStatus('walletStatus', 'Enter a valid amount of at least KES 100.', 'error');
+          return;
+        }
+        try {
+          await apiCall(`/api/loans/${loanId}/fund`, {
+            method: 'POST',
+            body: JSON.stringify({ amount })
+          });
+          setStatus('walletStatus', 'Funding successful.', 'success');
+          await refreshDashboard();
+        } catch (err) {
+          setStatus('walletStatus', err.message, 'error');
+        }
+      }
+
+      async function payRepayment(repId) {
+        try {
+          await apiCall(`/api/repayments/${repId}/pay`, { method: 'POST' });
+          setStatus('walletStatus', 'Repayment successful.', 'success');
+          await refreshDashboard();
+        } catch (err) {
+          setStatus('walletStatus', err.message, 'error');
+        }
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+          await apiCall('/api/logout', { method: 'POST' });
+          window.location.href = '/login';
+        } catch (err) {
+          window.location.href = '/login';
+        }
+      });
+
+      document.getElementById('depositForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = Number(document.getElementById('depositAmount').value);
+        try {
+          await apiCall('/api/wallet/deposit', {
+            method: 'POST',
+            body: JSON.stringify({ amount })
+          });
+          setStatus('walletStatus', 'Deposit successful.', 'success');
+          document.getElementById('depositForm').reset();
+          await refreshDashboard();
+        } catch (err) {
+          setStatus('walletStatus', err.message, 'error');
+        }
+      });
+
+      document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = Number(document.getElementById('withdrawAmount').value);
+        try {
+          await apiCall('/api/wallet/withdraw', {
+            method: 'POST',
+            body: JSON.stringify({ amount })
+          });
+          setStatus('walletStatus', 'Withdrawal successful.', 'success');
+          document.getElementById('withdrawForm').reset();
+          await refreshDashboard();
+        } catch (err) {
+          setStatus('walletStatus', err.message, 'error');
+        }
+      });
+
+      document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        try {
+          await apiCall('/api/loans', {
+            method: 'POST',
+            body: JSON.stringify({
+              amount: Number(form.amount.value),
+              term: Number(form.term.value),
+              type: form.type.value,
+              description: form.description.value
+            })
+          });
+          setStatus('loanStatus', 'Loan request created.', 'success');
+          form.reset();
+          await refreshDashboard();
+        } catch (err) {
+          setStatus('loanStatus', err.message, 'error');
+        }
+      });
+
+      refreshDashboard();
+    </script>
+  </body>
+</html>

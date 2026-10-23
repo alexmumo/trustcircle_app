@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrustCircle | Login</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #0f766e;
+        --primary-dark: #115e59;
+        --accent: #14b8a6;
+        --text: #122033;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --danger: #dc2626;
+        --success: #16a34a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #ecfdf5 0%, #f4f7fb 35%, #f8fafc 100%);
+        color: var(--text);
+      }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 1.6rem;
+      }
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        display: grid;
+        place-items: center;
+        color: white;
+      }
+      .nav a {
+        color: var(--text);
+        text-decoration: none;
+        margin-left: 14px;
+        font-weight: 600;
+      }
+      .box {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        padding: 24px;
+      }
+      h2 {
+        margin-top: 0;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 1rem;
+        background: #f8fafc;
+      }
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+      }
+      .status {
+        min-height: 22px;
+        margin-top: 8px;
+        font-size: 0.92rem;
+      }
+      .status.error { color: var(--danger); }
+      .status.success { color: var(--success); }
+      @media (max-width: 760px) {
+        .box { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <span>TrustCircle</span>
+        </div>
+        <nav class="nav">
+          <a href="/">Home</a>
+          <a href="/dashboard">Dashboard</a>
+        </nav>
+      </header>
+
+      <div class="box">
+        <div class="card">
+          <h2>Login</h2>
+          <form id="loginForm">
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <button type="submit" class="btn btn-primary">Login</button>
+          </form>
+          <div class="status" id="loginStatus"></div>
+        </div>
+
+        <div class="card">
+          <h2>Create account</h2>
+          <form id="registerForm">
+            <input type="text" name="full_name" placeholder="Full name" required />
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <button type="submit" class="btn btn-primary">Register</button>
+          </form>
+          <div class="status" id="registerStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function apiCall(url, options = {}) {
+        const response = await fetch(url, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || data.message || 'Request failed');
+        }
+        return data;
+      }
+
+      function showStatus(id, message, type='success') {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.className = 'status ' + type;
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        try {
+          await apiCall('/api/login', {
+            method: 'POST',
+            body: JSON.stringify({
+              email: form.email.value,
+              password: form.password.value
+            })
+          });
+          showStatus('loginStatus', 'Login successful.', 'success');
+          window.location.href = '/dashboard';
+        } catch (err) {
+          showStatus('loginStatus', err.message, 'error');
+        }
+      });
+
+      document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        try {
+          await apiCall('/api/register', {
+            method: 'POST',
+            body: JSON.stringify({
+              full_name: form.full_name.value,
+              email: form.email.value,
+              password: form.password.value
+            })
+          });
+          showStatus('registerStatus', 'Registration successful.', 'success');
+          window.location.href = '/dashboard';
+        } catch (err) {
+          showStatus('registerStatus', err.message, 'error');
+        }
+      });
+    </script>
+  </body>
+</html>

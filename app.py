@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, jsonify, render_template, request, session, redirect
 import os
 import sqlite3
 from datetime import date, datetime, timedelta
@@ -31,13 +31,6 @@ def ensure_schema():
         return
 
     with get_db() as con:
-        exists = con.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-        ).fetchone()
-
-        if exists:
-            return
-
         con.executescript(schema_path.read_text())
 
 
@@ -292,6 +285,18 @@ def create_app():
     @app.get("/")
     def home():
         return render_template("index.html")
+
+    @app.get("/login")
+    def login_page():
+        if get_current_user():
+            return redirect("/dashboard")
+        return render_template("login.html")
+
+    @app.get("/dashboard")
+    def dashboard_page():
+        if not get_current_user():
+            return redirect("/login")
+        return render_template("dashboard.html")
 
     @app.post("/api/register")
     def register():
