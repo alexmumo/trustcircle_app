@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TrustCircle icon">
+  <defs>
+    <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="#f4f7fb"/>
+  <rect x="60" y="60" width="392" height="392" rx="92" fill="url(#g1)"/>
+  <path d="M176 228c0-43 33-76 76-76 40 0 72 28 78 66h-44c-4-19-20-33-38-33-24 0-42 18-42 42v14h118v36H248v44h-41v-44H156v-36h35v-14zm84 92h44v-38h-44v38z" fill="#ffffff"/>
+  <circle cx="330" cy="310" r="22" fill="#d1fae5"/>
+  <path d="M330 268v28m0 66v28m-28-28h28m28 0h28" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+</svg>
