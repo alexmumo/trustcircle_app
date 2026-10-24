@@ -225,9 +225,26 @@
         <div class="card">
           <div class="section-title">Wallet</div>
           <form id="depositForm">
-            <input type="number" id="depositAmount" min="1" step="0.01" placeholder="Deposit amount" required />
-            <button class="btn btn-primary" type="submit">Deposit</button>
-          </form>
+    <input
+        type="number"
+        id="depositAmount"
+        min="1"
+        step="0.01"
+        placeholder="Deposit amount"
+        required
+    />
+
+    <input
+        type="tel"
+        id="phoneNumber"
+        placeholder="2547XXXXXXXX"
+        required
+    />
+
+    <button class="btn btn-primary" type="submit">
+        Deposit via M-Pesa
+    </button>
+</form>
           <form id="withdrawForm" style="margin-top: 12px;">
             <input type="number" id="withdrawAmount" min="1" step="0.01" placeholder="Withdraw amount" required />
             <button class="btn btn-secondary" type="submit">Withdraw</button>
