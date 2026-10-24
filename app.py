@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, render_template, request, session, redirect
+import base64
 import os
 import sqlite3
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+import requests
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -32,6 +34,118 @@ def ensure_schema():
 
     with get_db() as con:
         con.executescript(schema_path.read_text())
+
+
+def normalize_phone_number(phone_number):
+    phone = str(phone_number or "").strip().replace(" ", "").replace("-", "")
+    if not phone:
+        return ""
+    if phone.startswith("+"):
+        phone = phone[1:]
+    if phone.startswith("0"):
+        phone = "254" + phone[1:]
+    if phone.startswith("254") and len(phone) == 12:
+        return phone
+    return phone
+
+
+def get_mpesa_config():
+    env_name = (os.environ.get("MPESA_ENV") or "sandbox").lower()
+    if env_name not in {"sandbox", "production"}:
+        env_name = "sandbox"
+
+    base_url = (
+        "https://sandbox.safaricom.co.ke"
+        if env_name == "sandbox"
+        else "https://api.safaricom.co.ke"
+    )
+
+    return {
+        "env": env_name,
+        "base_url": base_url,
+        "consumer_key": os.environ.get("MPESA_CONSUMER_KEY", ""),
+        "consumer_secret": os.environ.get("MPESA_CONSUMER_SECRET", ""),
+        "shortcode": os.environ.get("MPESA_SHORTCODE", "174379"),
+        "passkey": os.environ.get("MPESA_PASSKEY", ""),
+        "callback_url": os.environ.get(
+            "MPESA_CALLBACK_URL",
+            "https://example.com/api/mpesa/callback",
+        ),
+    }
+
+
+def get_mpesa_access_token():
+    config = get_mpesa_config()
+    if not config["consumer_key"] or not config["consumer_secret"]:
+        raise RuntimeError("M-Pesa credentials are not configured.")
+
+    response = requests.get(
+        f"{config['base_url']}/oauth/v1/generate?grant_type=client_credentials",
+        auth=(config["consumer_key"], config["consumer_secret"]),
+        timeout=20,
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"M-Pesa token request failed: {response.text}")
+
+    payload = response.json()
+    token = payload.get("access_token")
+    if not token:
+        raise RuntimeError("M-Pesa token was not returned.")
+
+    return token
+
+
+def generate_mpesa_password(timestamp, shortcode, passkey):
+    raw = f"{shortcode}{passkey}{timestamp}".encode()
+    return base64.b64encode(raw).decode()
+
+
+def initiate_mpesa_stk_push(amount, phone_number, account_reference="TrustCircle"):
+    config = get_mpesa_config()
+    if not config["passkey"] or not config["shortcode"]:
+        raise RuntimeError("M-Pesa config is incomplete.")
+
+    phone = normalize_phone_number(phone_number)
+    if not phone:
+        raise ValueError("Phone number is required.")
+
+    amount_value = float(amount)
+    if amount_value <= 0:
+        raise ValueError("Amount must be greater than zero.")
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    password = generate_mpesa_password(timestamp, config["shortcode"], config["passkey"])
+    token = get_mpesa_access_token()
+
+    payload = {
+        "BusinessShortCode": config["shortcode"],
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": int(amount_value),
+        "PartyA": phone,
+        "PartyB": config["shortcode"],
+        "PhoneNumber": phone,
+        "CallBackURL": config["callback_url"],
+        "AccountReference": account_reference,
+        "TransactionDesc": f"TrustCircle wallet top-up: {account_reference}",
+    }
+
+    response = requests.post(
+        f"{config['base_url']}/mpesa/stkpush/v1/processrequest",
+        json=payload,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        timeout=30,
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"M-Pesa STK push failed: {response.text}")
+
+    return response.json()
 
 
 def create_repayment_schedule(con, loan_id):
@@ -277,6 +391,8 @@ def create_app():
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=False,
+        SESSION_PERMANENT=True,
+        PERMANENT_SESSION_LIFETIME=timedelta(days=30),
         JSON_SORT_KEYS=False,
     )
 
@@ -470,6 +586,63 @@ def create_app():
             "balance": new_balance,
         })
 
+    @app.post("/api/wallet/mpesa")
+    def wallet_mpesa_deposit():
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Please login first."}), 401
+
+        data = request.get_json() or {}
+        try:
+            amount = float(data.get("amount", 0))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Invalid amount."}), 400
+
+        phone_number = str(data.get("phone_number", "")).strip()
+        if amount <= 0:
+            return jsonify({"error": "Amount must be greater than zero."}), 400
+
+        try:
+            result = initiate_mpesa_stk_push(amount, phone_number, account_reference=f"TrustCircle-{user['id']}")
+            return jsonify({
+                "message": "M-Pesa STK push request has been sent.",
+                "amount": amount,
+                "phone_number": normalize_phone_number(phone_number),
+                "result": result,
+            })
+        except Exception as exc:
+            return jsonify({"error": str(exc)}), 500
+
+    @app.post("/api/mpesa/callback")
+    def mpesa_callback():
+        payload = request.get_json(silent=True) or {}
+        body = payload.get("Body", {})
+        stk_callback = body.get("stkCallback", {})
+        result_code = stk_callback.get("ResultCode")
+        result_desc = stk_callback.get("ResultDesc")
+
+        if result_code == 0:
+            metadata = stk_callback.get("CallbackMetadata", {}).get("Item", [])
+            callback_values = {}
+            for item in metadata:
+                name = item.get("Name")
+                value = item.get("Value")
+                if name:
+                    callback_values[name] = value
+
+            amount = callback_values.get("Amount")
+            receipt = callback_values.get("MpesaReceiptNumber")
+            phone = callback_values.get("PhoneNumber")
+            if amount is not None and receipt:
+                with get_db() as con:
+                    con.execute(
+                        "INSERT INTO transactions (user_id, transaction_type, amount, reference) VALUES (?, ?, ?, ?)",
+                        (0, "mpesa_deposit", float(amount), f"M-Pesa receipt {receipt}"),
+                    )
+                    con.commit()
+
+        return jsonify({"ResultCode": 0, "ResultDesc": result_desc or "Accepted"})
+
     @app.post("/api/wallet/withdraw")
     def wallet_withdraw():
         user = get_current_user()
@@ -552,7 +725,7 @@ def create_app():
             my_loans = con.execute(
                 """
                 SELECT COALESCE(SUM(amount), 0) AS total_requested,
-                       COALESCE(SUM(funded_amount), 0) AS total_funded
+                        COALESCE(SUM(funded_amount), 0) AS total_funded
                 FROM loans
                 WHERE borrower_id = ?
                 """,
@@ -562,7 +735,7 @@ def create_app():
             my_funding = con.execute(
                 """
                 SELECT COALESCE(SUM(amount), 0) AS total_lent,
-                       COALESCE(SUM(amount * lender_return_rate), 0) AS total_expected_profit
+                        COALESCE(SUM(amount * lender_return_rate), 0) AS total_expected_profit
                 FROM contributions
                 WHERE lender_id = ?
                 """,
@@ -772,9 +945,9 @@ def create_app():
             rows = con.execute(
                 """
                 SELECT contributions.id, contributions.loan_id, contributions.amount,
-                       contributions.lender_return_rate, contributions.created_at,
-                       loans.loan_type, loans.amount AS loan_amount, loans.funded_amount,
-                       loans.term_months, loans.status, users.full_name AS borrower_name
+                        contributions.lender_return_rate, contributions.created_at,
+                        loans.loan_type, loans.amount AS loan_amount, loans.funded_amount,
+                        loans.term_months, loans.status, users.full_name AS borrower_name
                 FROM contributions
                 JOIN loans ON loans.id = contributions.loan_id
                 JOIN users ON users.id = loans.borrower_id
@@ -890,7 +1063,7 @@ def create_app():
             rows = con.execute(
                 """
                 SELECT r.id, r.loan_id, r.amount, r.due_date, r.paid_at, r.status,
-                       l.loan_type, l.amount AS loan_amount
+                        l.loan_type, l.amount AS loan_amount
                 FROM repayments r
                 JOIN loans l ON l.id = r.loan_id
                 WHERE l.borrower_id = ?
