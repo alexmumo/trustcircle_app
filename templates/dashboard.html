@@ -503,31 +503,41 @@
       });
 
       document.getElementById('depositForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const amount = Number(document.getElementById('depositAmount').value);
-  const phoneNumber = document.getElementById('phoneNumber').value.trim();
-
-  try {
-    const result = await apiCall('/api/wallet/mpesa', {
-      method: 'POST',
-      body: JSON.stringify({
-        amount,
-        phone_number: phoneNumber
-      })
-    });
-
-    setStatus(
-      'walletStatus',
-      result.message || 'M-Pesa STK Push sent. Check your phone.',
-      'success'
+    const amount = Number(
+        document.getElementById('depositAmount').value
     );
 
-    document.getElementById('depositForm').reset();
+    const phoneNumber = document
+        .getElementById('phoneNumber')
+        .value
+        .trim();
 
-  } catch (err) {
-    setStatus('walletStatus', err.message, 'error');
-  }
+    try {
+        const result = await apiCall('/api/wallet/mpesa', {
+            method: 'POST',
+            body: JSON.stringify({
+                amount: amount,
+                phone_number: phoneNumber
+            })
+        });
+
+        setStatus(
+            'walletStatus',
+            result.message || 'M-Pesa STK Push sent. Check your phone.',
+            'success'
+        );
+
+        document.getElementById('depositForm').reset();
+
+    } catch (err) {
+        setStatus(
+            'walletStatus',
+            err.message,
+            'error'
+        );
+    }
 });
 
       document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
