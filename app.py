@@ -76,8 +76,10 @@ def get_mpesa_config():
 
 def get_mpesa_access_token():
     config = get_mpesa_config()
-    if not config["consumer_key"] or not config["consumer_secret"]:
-        raise RuntimeError("M-Pesa credentials are not configured.")
+
+    print("ENV:", config["env"])
+    print("KEY EXISTS:", bool(config["consumer_key"]))
+    print("SECRET EXISTS:", bool(config["consumer_secret"]))
 
     response = requests.get(
         f"{config['base_url']}/oauth/v1/generate?grant_type=client_credentials",
@@ -85,20 +87,15 @@ def get_mpesa_access_token():
         timeout=20,
     )
 
-    if response.status_code != 200:
-        print("TOKEN STATUS:", response.status_code)
-        print("TOKEN RESPONSE:", response.text)
+    print("STATUS:", response.status_code)
+    print("BODY:", response.text)
 
+    if response.status_code != 200:
         raise RuntimeError(
             f"M-Pesa token request failed: {response.status_code} - {response.text}"
-       )
+        )
 
-    payload = response.json()
-    token = payload.get("access_token")
-    if not token:
-        raise RuntimeError("M-Pesa token was not returned.")
-
-    return token
+    return response.json()["access_token"]
 
 
 def generate_mpesa_password(timestamp, shortcode, passkey):
