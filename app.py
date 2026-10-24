@@ -50,7 +50,7 @@ def normalize_phone_number(phone_number):
 
 
 def get_mpesa_config():
-    env_name = (os.environ.get("MPESA_ENV") or "sandbox").lower()
+    env_name = (os.environ.get("MPESA_ENVIRONMENT") or "sandbox").lower()
     if env_name not in {"sandbox", "production"}:
         env_name = "sandbox"
 
