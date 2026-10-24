@@ -611,7 +611,9 @@ def create_app():
                 "result": result,
             })
         except Exception as exc:
-            return jsonify({"error": str(exc)}), 500
+    print("MPESA ERROR:", exc)
+    return jsonify({"error": str(exc)}), 500
+
 
     @app.post("/api/mpesa/callback")
     def mpesa_callback():
