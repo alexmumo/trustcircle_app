@@ -86,7 +86,12 @@ def get_mpesa_access_token():
     )
 
     if response.status_code != 200:
-        raise RuntimeError(f"M-Pesa token request failed: {response.text}")
+    print("TOKEN STATUS:", response.status_code)
+    print("TOKEN RESPONSE:", response.text)
+
+    raise RuntimeError(
+        f"M-Pesa token request failed: {response.status_code} - {response.text}"
+    )
 
     payload = response.json()
     token = payload.get("access_token")
