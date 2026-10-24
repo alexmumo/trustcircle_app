@@ -503,20 +503,32 @@
       });
 
       document.getElementById('depositForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const amount = Number(document.getElementById('depositAmount').value);
-        try {
-          await apiCall('/api/wallet/deposit', {
-            method: 'POST',
-            body: JSON.stringify({ amount })
-          });
-          setStatus('walletStatus', 'Deposit successful.', 'success');
-          document.getElementById('depositForm').reset();
-          await refreshDashboard();
-        } catch (err) {
-          setStatus('walletStatus', err.message, 'error');
-        }
-      });
+  e.preventDefault();
+
+  const amount = Number(document.getElementById('depositAmount').value);
+  const phoneNumber = document.getElementById('phoneNumber').value.trim();
+
+  try {
+    const result = await apiCall('/api/wallet/mpesa', {
+      method: 'POST',
+      body: JSON.stringify({
+        amount,
+        phone_number: phoneNumber
+      })
+    });
+
+    setStatus(
+      'walletStatus',
+      result.message || 'M-Pesa STK Push sent. Check your phone.',
+      'success'
+    );
+
+    document.getElementById('depositForm').reset();
+
+  } catch (err) {
+    setStatus('walletStatus', err.message, 'error');
+  }
+});
 
       document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
         e.preventDefault();
