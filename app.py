@@ -605,16 +605,24 @@ def create_app():
             return jsonify({"error": "Amount must be greater than zero."}), 400
 
         try:
-            result = initiate_mpesa_stk_push(amount, phone_number, account_reference=f"TrustCircle-{user['id']}")
-            return jsonify({
-                "message": "M-Pesa STK push request has been sent.",
-                "amount": amount,
-                "phone_number": normalize_phone_number(phone_number),
-                "result": result,
-            })
-        except Exception as exc:
-            print("MPESA ERROR:", exc)
-            return jsonify({"error": str(exc)}), 500
+    result = initiate_mpesa_stk_push(
+        amount,
+        phone_number,
+        account_reference=f"TrustCircle-{user['id']}"
+    )
+
+    print("STK RESPONSE:", result)
+
+    return jsonify({
+        "message": "M-Pesa STK push request has been sent.",
+        "amount": amount,
+        "phone_number": normalize_phone_number(phone_number),
+        "result": result,
+    })
+
+except Exception as exc:
+    print("MPESA ERROR:", exc)
+    return jsonify({"error": str(exc)}), 500
 
 
     @app.post("/api/mpesa/callback")
